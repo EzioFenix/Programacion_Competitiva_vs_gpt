@@ -1,0 +1,63 @@
+jQuery(document).ready(function() {
+
+    //Initialize select2-selectboxes
+    jQuery('select.select2').each(function() {
+        const classes = jQuery(this).attr("class").replace("select2", "");
+        const placeholder = jQuery(this).attr("data-placeholder");
+        jQuery(this).select2({
+            width: jQuery(this).parents(".select-list").length ? "auto" : "100%",
+            dropdownCssClass: classes,
+            placeholder: placeholder || null
+        });
+    })
+
+    //Initialize the onchange-handlers
+    jQuery(".is-select2-with-info").each(function() {
+        //Initialize the selectbox
+        onSelectChange(this);
+        //Add the event-handler
+        jQuery(this).on("change", function(e) {
+            onSelectChange(e.target);
+        });
+    });
+
+    //Change the text in the infobox on select change
+    function onSelectChange(target) {
+        const value = target.value;
+
+        if (value == null) {
+            console.log("No value");
+            return;
+        }
+
+        const option = target.querySelector('option[value="'+ value +'"]');
+        const parent = target.closest("form");
+        const infoBox = parent.querySelector(".is-select-information");
+        const infoText = option.getAttribute("data-info-text");
+        if (option != null && infoText) {
+            infoBox.textContent = infoText;
+            infoBox.style.display = "flex";
+        } else {
+            infoBox.style.display = "none";
+        }
+    }
+
+    // Form reset does not automatically update select2 items, so we
+    // override reset buttons to reset from javascript and then trigger
+    // a change event on all select2 selects to redraw them
+    jQuery('input[type=reset]').click(function(event) {
+        event.preventDefault();
+        const form = event.target.closest('form');
+        form.reset();
+        jQuery('.select2').trigger('change');
+    });
+
+    // workaround for https://github.com/select2/select2/issues/5993
+    jQuery(document).on('select2:open', () => {
+        const allFound = document.querySelectorAll('.select2-container--open .select2-search__field');
+        if (allFound) {
+            allFound[allFound.length - 1].focus();
+        }
+    });
+
+});
